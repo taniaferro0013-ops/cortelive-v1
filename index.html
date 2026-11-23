@@ -1,0 +1,277 @@
+HTML
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#090711">
+<title>CorteLive — Editor de vídeos</title>
+<style>
+:root{--bg:#090711;--panel:#151220;--panel2:#1d182b;--purple:#8b5cf6;--pink:#d946ef;--text:#f8f7fc;--muted:#aaa4ba;--line:#30283e}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 80% 0%,#281344 0,transparent 32%),var(--bg);color:var(--text);font-family:Arial,sans-serif}
+header{height:68px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 5%;background:#0c0913eF;position:sticky;top:0;z-index:5}
+.logo{font-size:23px;font-weight:900;letter-spacing:-1px}.logo span{color:#b58aff}
+.tag{font-size:11px;color:#c4a8ff;border:1px solid #62439a;padding:6px 9px;border-radius:20px}
+main{max-width:1100px;margin:auto;padding:35px 18px 60px}
+.hero{text-align:center;margin:12px auto 30px}.hero h1{font-size:clamp(30px,6vw,48px);margin:0 0 12px;letter-spacing:-1.8px}.hero h1 span{background:linear-gradient(90deg,#a78bfa,#ec4899);-webkit-background-clip:text;color:transparent}
+.hero p{color:var(--muted);font-size:14px;line-height:1.6;margin:0}
+.workspace{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}
+.panel{background:linear-gradient(145deg,#191525,#100e18);border:1px solid var(--line);border-radius:18px;padding:20px;min-width:0}
+.panel h2{font-size:17px;margin:0 0 17px}
+.upload{border:1.5px dashed #7651a9;border-radius:14px;padding:25px 12px;text-align:center;background:#21172f;cursor:pointer}
+.upload strong{display:block;margin:8px 0}.upload small{color:var(--muted)}
+.upload input{display:none}
+.video-wrap{margin-top:16px;background:#050408;border-radius:13px;overflow:hidden;min-height:190px;display:flex;align-items:center;justify-content:center}
+video{width:100%;max-height:420px;display:block}
+.empty{color:#81798f;font-size:13px;padding:45px 10px;text-align:center}
+.field{margin-top:18px}.field label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:9px;color:#ded8eb}
+input[type=range]{width:100%;accent-color:#a78bfa}
+input[type=text]{width:100%;background:#0d0a14;border:1px solid var(--line);padding:13px;border-radius:10px;color:white;outline:none}
+input[type=text]:focus{border-color:var(--purple)}
+.options{display:flex;gap:8px;flex-wrap:wrap}
+.option{background:#211b2d;border:1px solid var(--line);color:#ddd5eb;border-radius:9px;padding:10px 14px;cursor:pointer}
+.option.active{background:#58359a;border-color:#a78bfa;color:white}
+.preview{position:relative;background:#050408;border-radius:13px;min-height:240px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-top:14px}
+.preview video{width:100%;max-height:380px;object-fit:contain}
+.overlay{position:absolute;bottom:12%;left:5%;right:5%;text-align:center;font-size:clamp(15px,4vw,24px);font-weight:900;text-shadow:2px 2px 5px #000,-1px -1px 4px #000;overflow-wrap:anywhere}
+.btn{border:0;border-radius:11px;padding:14px 18px;background:linear-gradient(100deg,#7c3aed,#c026d3);color:white;font-weight:800;font-size:14px;width:100%;cursor:pointer;margin-top:18px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.secondary{background:#282136;border:1px solid var(--line)}
+.note{font-size:11px;color:var(--muted);line-height:1.6;margin-top:13px}
+.status{font-size:12px;color:#c4a8ff;margin-top:12px;min-height:18px}
+footer{text-align:center;color:#766e84;font-size:11px;padding:20px}
+@media(max-width:760px){.workspace{grid-template-columns:1fr}main{padding:25px 13px 45px}.panel{padding:16px}.hero{margin-bottom:23px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Corte<span>Live</span></div>
+  <div class="tag">CRIADOR DE CORTES</div>
+</header>
+
+<main>
+  <section class="hero">
+    <h1>Transforme vídeos em <span>momentos virais.</span></h1>
+    <p>Escolha seu vídeo, selecione o trecho e prepare seu conteúdo para as redes sociais.</p>
+  </section>
+
+  <div class="workspace">
+    <section class="panel">
+      <h2>01. Seu vídeo</h2>
+      <label class="upload" for="file">
+        <div style="font-size:30px">＋</div>
+        <strong>Selecionar vídeo</strong>
+        <small>Toque aqui para escolher um arquivo do celular</small>
+        <input id="file" type="file" accept="video/*">
+      </label>
+
+      <div class="video-wrap" id="videoWrap">
+        <div class="empty" id="empty">Seu vídeo aparecerá aqui.</div>
+        <video id="source" controls playsinline style="display:none"></video>
+      </div>
+
+      <div class="field">
+        <label>Início do corte <span id="startLabel">0.0s</span></label>
+        <input id="start" type="range" min="0" max="0" step=".1" value="0">
+      </div>
+      <div class="field">
+        <label>Fim do corte <span id="endLabel">0.0s</span></label>
+        <input id="end" type="range" min="0" max="0" step=".1" value="0">
+      </div>
+      <button class="btn secondary" id="previewBtn">▶ Pré-visualizar trecho</button>
+    </section>
+
+    <section class="panel">
+      <h2>02. Personalize seu corte</h2>
+      <div class="field">
+        <label>Formato do vídeo</label>
+        <div class="options" id="formats">
+          <button class="option active" data-ratio="9:16">9:16 Reels</button>
+          <button class="option" data-ratio="16:9">16:9 YouTube</button>
+          <button class="option" data-ratio="1:1">1:1 Quadrado</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Texto na tela</label>
+        <input id="caption" type="text" placeholder="Escreva uma chamada para seu vídeo...">
+      </div>
+
+      <div class="field">
+        <label>Prévia do resultado</label>
+        <div class="preview" id="preview">
+          <video id="previewVideo" playsinline muted></video>
+          <div class="overlay" id="overlay"></div>
+        </div>
+      </div>
+
+      <button class="btn" id="exportBtn" disabled>Exportar meu corte</button>
+      <div class="status" id="status"></div>
+      <p class="note">A exportação experimental utiliza o recurso de gravação do navegador e pode gerar um arquivo WebM, não MP4. O resultado depende do suporte do navegador e do aparelho.</p>
+    </section>
+  </div>
+</main>
+<footer>CorteLive V1 · Ferramenta experimental de edição</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+const file=$("file"), source=$("source"), previewVideo=$("previewVideo");
+let videoURL=null, ratio="9:16", duration=0;
+
+function setStatus(msg){$("status").textContent=msg}
+function updateLabels(){
+  $("startLabel").textContent=Number($("start").value).toFixed(1)+"s";
+  $("endLabel").textContent=Number($("end").value).toFixed(1)+"s";
+}
+file.addEventListener("change",()=>{
+  const f=file.files[0];
+  if(!f)return;
+  if(!f.type.startsWith("video/")){setStatus("Escolha um arquivo de vídeo.");return}
+  if(videoURL)URL.revokeObjectURL(videoURL);
+  videoURL=URL.createObjectURL(f);
+  source.src=videoURL;
+  previewVideo.src=videoURL;
+  source.style.display="block";
+  $("empty").style.display="none";
+  source.onloadedmetadata=()=>{
+    duration=source.duration;
+    $("start").max=duration;
+    $("end").max=duration;
+    $("end").value=duration;
+    $("start").value=0;
+    updateLabels();
+    $("exportBtn").disabled=false;
+    setStatus("Vídeo carregado. Ajuste o trecho desejado.");
+  };
+});
+$("start").addEventListener("input",()=>{
+  if(Number($("start").value)>=Number($("end").value)){
+    $("end").value=Math.min(duration,Number($("start").value)+.5);
+  }
+  updateLabels();
+});
+$("end").addEventListener("input",()=>{
+  if(Number($("end").value)<=Number($("start").value)){
+    $("start").value=Math.max(0,Number($("end").value)-.5);
+  }
+  updateLabels();
+});
+$("formats").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-ratio]");
+  if(!b)return;
+  ratio=b.dataset.ratio;
+  document.querySelectorAll(".option").forEach(x=>x.classList.toggle("active",x===b));
+  const [w,h]=ratio.split(":").map(Number);
+  $("preview").style.aspectRatio=w+"/"+h;
+});
+$("caption").addEventListener("input",()=>{
+  $("overlay").textContent=$("caption").value;
+});
+$("previewBtn").addEventListener("click",async()=>{
+  if(!videoURL){setStatus("Selecione um vídeo primeiro.");return}
+  previewVideo.currentTime=Number($("start").value);
+  previewVideo.muted=false;
+  try{await previewVideo.play();setStatus("Pré-visualizando o trecho...")}
+  catch(e){setStatus("Toque no vídeo para iniciar a prévia.")}
+  previewVideo.ontimeupdate=()=>{
+    if(previewVideo.currentTime>=Number($("end").value)){
+      previewVideo.pause();
+      previewVideo.ontimeupdate=null;
+    }
+  };
+});
+$("exportBtn").addEventListener("click",async()=>{
+  if(!videoURL)return;
+  if(!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream){
+    setStatus("Seu navegador não oferece suporte à exportação experimental.");
+    return;
+  }
+  const start=Number($("start").value),end=Number($("end").value);
+  if(end<=start){setStatus("Ajuste o início e o fim do corte.");return}
+  const btn=$("exportBtn");
+  btn.disabled=true;
+  setStatus("Preparando a exportação...");
+  const canvas=document.createElement("canvas");
+  let width=720,height=1280;
+  if(ratio==="16:9"){width=1280;height=720}
+  if(ratio==="1:1"){width=900;height=900}
+  canvas.width=width;canvas.height=height;
+  const ctx=canvas.getContext("2d");
+  const stream=canvas.captureStream(30);
+  const mime=["video/webm;codecs=vp9","video/webm;codecs=vp8","video/webm"].find(t=>MediaRecorder.isTypeSupported(t));
+  if(!mime){setStatus("Formato de gravação não suportado neste navegador.");btn.disabled=false;return}
+  const recorder=new MediaRecorder(stream,{mimeType:mime});
+  const chunks=[];
+  recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+  recorder.onerror=()=>{setStatus("Falha na gravação. Tente novamente.");btn.disabled=false};
+  recorder.onstop=()=>{
+    const blob=new Blob(chunks,{type:mime});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;a.download="cortelive-corte.webm";
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),30000);
+    setStatus("Exportação concluída. Verifique seus downloads.");
+    btn.disabled=false;
+    stream.getTracks().forEach(t=>t.stop());
+  };
+  previewVideo.pause();
+  previewVideo.currentTime=start;
+  previewVideo.muted=true;
+  try{
+    await new Promise((resolve,reject)=>{
+      previewVideo.onseeked=resolve;
+      previewVideo.onerror=reject;
+    });
+    recorder.start();
+    await previewVideo.play();
+    setStatus("Gravando seu corte...");
+    function draw(){
+      if(recorder.state!=="recording")return;
+      ctx.fillStyle="#000";ctx.fillRect(0,0,width,height);
+      const vw=previewVideo.videoWidth,vh=previewVideo.videoHeight;
+      if(vw&&vh){
+        const scale=Math.max(width/vw,height/vh);
+        const dw=vw*scale,dh=vh*scale;
+        ctx.drawImage(previewVideo,(width-dw)/2,(height-dh)/2,dw,dh);
+      }
+      const text=$("caption").value.trim();
+      if(text){
+        const fontSize=Math.round(width*.045);
+        ctx.font="bold "+fontSize+"px Arial";
+        ctx.textAlign="center";ctx.textBaseline="middle";
+        ctx.lineWidth=Math.max(3,width*.006);ctx.strokeStyle="#000";
+        ctx.fillStyle="#fff";
+        const words=text.split(/\s+/);let lines=[],line="";
+        for(const word of words){
+          const test=line?line+" "+word:word;
+          if(ctx.measureText(test).width>width*.88&&line){lines.push(line);line=word}
+          else line=test;
+        }
+        if(line)lines.push(line);
+        const lineHeight=fontSize*1.2;
+        const y=height*.78-(lines.length-1)*lineHeight/2;
+        lines.forEach((l,i)=>{
+          ctx.strokeText(l,width/2,y+i*lineHeight);
+          ctx.fillText(l,width/2,y+i*lineHeight);
+        });
+      }
+      if(previewVideo.currentTime>=end){
+        previewVideo.pause();
+        if(recorder.state==="recording")recorder.stop();
+        return;
+      }
+      requestAnimationFrame(draw);
+    }
+    requestAnimationFrame(draw);
+  }catch(e){
+    if(recorder.state==="recording")recorder.stop();
+    else{setStatus("Não foi possível iniciar a exportação.");btn.disabled=false}
+  }
+});
+</script>
+</body>
+  </html>
+  
